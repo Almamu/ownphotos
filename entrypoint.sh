@@ -6,7 +6,7 @@ cp nginx.conf /etc/nginx/sites-enabled/default
 # run nginx as root - see https://github.com/hooram/ownphotos/issues/78
 sed -i -e 's/user www-data/user root/g' /etc/nginx/nginx.conf
 
-systemctl restart nginx.service
+service nginx restart
 
 python image_similarity/main.py 2>&1 | tee logs/gunicorn_image_similarity.log &
 
