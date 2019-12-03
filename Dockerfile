@@ -1,66 +1,41 @@
-FROM ubuntu:16.04
-MAINTAINER Hooram Nam <nhooram@gmail.com>
+FROM python:3.7.5
 
 ENV MAPZEN_API_KEY mapzen-XXXX
 ENV MAPBOX_API_KEY mapbox-XXXX
 ENV ALLOWED_HOSTS=*
 
-RUN apt-get update && \
-    apt-get install -y \
-    libsm6 \
-    libboost-all-dev \
-    libglib2.0-0 \
-    libxrender-dev \
-    wget \
-    curl \
-    nginx 
+RUN mkdir /root/app
+RUN mkdir /root/app/logs
+WORKDIR /root/app
 
-RUN apt-get install -y bzip2
+# install cmake and build-essentials
+RUN apt-get update && apt-get install -y cmake build-essential nginx
 
+COPY . /root/app
 
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-RUN bash Miniconda3-latest-Linux-x86_64.sh -b -p /miniconda
-# RUN apt-get install libopenblas-dev liblapack-dev
-RUN /miniconda/bin/conda install -y faiss-cpu -c pytorch
-RUN /miniconda/bin/conda install -y cython
-
-# Build and install dlib
-RUN apt-get update && \
-    apt-get install -y cmake git build-essential && \
-    git clone https://github.com/davisking/dlib.git && \
-    mkdir /dlib/build && \
-    cd /dlib/build && \
-    cmake .. -DDLIB_USE_CUDA=0 -DUSE_AVX_INSTRUCTIONS=0 && \
-    cmake --build . && \
-    cd /dlib && \
-    /miniconda/bin/python setup.py install --no USE_AVX_INSTRUCTIONS --no DLIB_USE_CUDA 
-
-RUN /miniconda/bin/conda install -y pytorch=0.4.1 -c pytorch
-# RUN /venv/bin/pip install http://download.pytorch.org/whl/cpu/torch-0.4.1-cp35-cp35m-linux_x86_64.whl && /venv/bin/pip install torchvision
-RUN /miniconda/bin/conda install -y psycopg2
-
-RUN mkdir /code
-WORKDIR /code
-COPY requirements.txt /code/
-RUN /miniconda/bin/pip install -r requirements.txt
-
-RUN /miniconda/bin/python -m spacy download en_core_web_sm
-
-WORKDIR /code/api/places365
+# download places365 requirements
+WORKDIR /root/app/api/places365
 RUN wget https://s3.eu-central-1.amazonaws.com/ownphotos-deploy/places365_model.tar.gz
 RUN tar xf places365_model.tar.gz
 
-WORKDIR /code/api/im2txt
+# download im2txt requirements
+WORKDIR /root/app/api/im2txt
 RUN wget https://s3.eu-central-1.amazonaws.com/ownphotos-deploy/im2txt_model.tar.gz
 RUN tar xf im2txt_model.tar.gz
 RUN wget https://s3.eu-central-1.amazonaws.com/ownphotos-deploy/im2txt_data.tar.gz
 RUN tar xf im2txt_data.tar.gz
 
-RUN rm -rf /var/lib/apt/lists/*
-RUN apt-get remove --purge -y cmake git && \
-    rm -rf /var/lib/apt/lists/*
+WORKDIR /root/app
 
-VOLUME /data
+# install prerequirements
+RUN pip install -r prerequirements.txt
+# install requirements
+RUN pip install -r requirements.txt
+
+RUN python -m spacy download en_core_web_sm
+
+# cleanup installed packages
+RUN apt-get remove --purge -y cmake git && rm -rf /var/lib/apt/lists/*
 
 # Application admin creds
 ENV ADMIN_EMAIL admin@dot.com
@@ -70,7 +45,7 @@ ENV ADMIN_PASSWORD changeme
 # Django key. CHANGEME
 ENV SECRET_KEY supersecretkey
 # Until we serve media files properly (django dev server doesn't serve media files with with debug=false)
-ENV DEBUG true 
+ENV DEBUG true
 
 # Database connection info
 ENV DB_BACKEND postgresql
@@ -91,11 +66,6 @@ ENV REDIS_PORT 11211
 ENV TIME_ZONE UTC
 
 EXPOSE 80
-COPY . /code
 
-
-RUN mv /code/config_docker.py /code/config.py
-
-WORKDIR /code
-
+# run bash for now
 ENTRYPOINT ./entrypoint.sh
