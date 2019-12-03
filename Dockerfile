@@ -1,15 +1,14 @@
-FROM python:3.7.5
+FROM python:3.5
 
 ENV MAPZEN_API_KEY mapzen-XXXX
 ENV MAPBOX_API_KEY mapbox-XXXX
 ENV ALLOWED_HOSTS=*
 
 RUN mkdir /root/app
-RUN mkdir /root/app/logs
 WORKDIR /root/app
 
 # install cmake and build-essentials
-RUN apt-get update && apt-get install -y cmake build-essential
+RUN apt-get update && apt-get install -y cmake build-essential nginx
 
 COPY . /root/app
 
