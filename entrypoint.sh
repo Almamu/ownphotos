@@ -1,16 +1,6 @@
 #! /bin/bash
 export PYTHONUNBUFFERED=TRUE
 
-cp /root/app/nginx.conf /etc/nginx/sites-enabled/default
-sed -i -e 's/replaceme/'"$BACKEND_HOST"'/g' /etc/nginx/sites-enabled/default
-
-# run nginx as root - see https://github.com/hooram/ownphotos/issues/78
-sed -i -e 's/user www-data/user root/g' /etc/nginx/nginx.conf
-
-service nginx restart
-# source /venv/bin/activate
-
-
 python image_similarity/main.py 2>&1 | tee logs/gunicorn_image_similarity.log &
 
 python manage.py makemigrations api 2>&1 | tee logs/command_makemigrations.log
@@ -31,5 +21,5 @@ EOF
 echo "Running backend server..."
 
 python manage.py rqworker default 2>&1 | tee logs/rqworker.log &
-gunicorn --workers=2 --worker-class=gevent --bind 0.0.0.0:8001 --log-level=info ownphotos.wsgi 2>&1 | tee logs/gunicorn_django.log
+gunicorn --workers=2 --worker-class=gevent --bind 0.0.0.0 --log-level=info ownphotos.wsgi 2>&1 | tee logs/gunicorn_django.log
 

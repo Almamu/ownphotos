@@ -9,7 +9,7 @@ RUN mkdir /root/app/logs
 WORKDIR /root/app
 
 # install cmake and build-essentials
-RUN apt-get update && apt-get install -y cmake build-essential nginx
+RUN apt-get update && apt-get install -y cmake build-essential
 
 COPY . /root/app
 
