@@ -1,4 +1,5 @@
 FROM python:3.5
+MAINTAINER Alexis Maiquez <almamu@almamu.com>
 
 ENV MAPZEN_API_KEY mapzen-XXXX
 ENV MAPBOX_API_KEY mapbox-XXXX
