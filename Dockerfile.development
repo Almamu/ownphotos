@@ -1,0 +1,42 @@
+FROM python:3.5
+MAINTAINER Alexis Maiquez <almamu@almamu.com>
+
+ENV MAPZEN_API_KEY mapzen-XXXX
+ENV MAPBOX_API_KEY mapbox-XXXX
+ENV ALLOWED_HOSTS=*
+
+VOLUME /root/app/
+WORKDIR /root/app/
+
+# Application admin creds
+ENV ADMIN_EMAIL admin@dot.com
+ENV ADMIN_USERNAME admin
+ENV ADMIN_PASSWORD changeme
+
+# Django key. CHANGEME
+ENV SECRET_KEY supersecretkey
+# Until we serve media files properly (django dev server doesn't serve media files with with debug=false)
+ENV DEBUG true
+
+# Database connection info
+ENV DB_BACKEND postgresql
+ENV DB_NAME ownphotos
+ENV DB_USER ownphotos
+ENV DB_PASS ownphotos
+ENV DB_HOST database
+ENV DB_PORT 5432
+
+ENV BACKEND_HOST localhost
+ENV FRONTEND_HOST localhost
+
+# REDIS location
+ENV REDIS_HOST redis
+ENV REDIS_PORT 11211
+
+# Timezone
+ENV TIME_ZONE UTC
+
+EXPOSE 80
+
+# run bash for now
+ENTRYPOINT ./entrypoint.dev.sh
